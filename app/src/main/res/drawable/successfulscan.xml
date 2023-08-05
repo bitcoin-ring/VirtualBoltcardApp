@@ -1,0 +1,22 @@
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android" android:oneshot="true">
+    <item android:drawable="@drawable/successfullscan_01" android:duration="400" />
+    <item android:drawable="@drawable/successfullscan_02" android:duration="30" />
+    <item android:drawable="@drawable/successfullscan_03" android:duration="200" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_03" android:duration="50" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_03" android:duration="60" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_02" android:duration="30" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_01" android:duration="400" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_03" android:duration="50" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_03" android:duration="60" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_02" android:duration="30" />
+    <item android:drawable="@drawable/successfullscan_04" android:duration="40" />
+    <item android:drawable="@drawable/successfullscan_01" android:duration="400" />
+    <!-- add more items here -->
+</animation-list>

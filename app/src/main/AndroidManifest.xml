@@ -1,46 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="com.bitcoin_ring.virtualboltcard">
+        xmlns:tools="http://schemas.android.com/tools"
+        package="com.bitcoin_ring.virtualboltcard">
 
-    <uses-permission android:name="android.permission.NFC"/>
-    <uses-feature android:name="android.hardware.nfc.hce"
-                  android:required="true"/>
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" / -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <uses-feature
+            android:name="android.hardware.nfc.hce"
+            android:required="true" />
     <uses-feature
             android:name="android.hardware.nfc"
-            android:required="true"/>
+            android:required="true" />
+    <uses-feature
+            android:name="android.hardware.camera"
+            android:required="false" />
 
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
+            android:screenOrientation="portrait"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme"
+            android:theme="@style/AppTheme.NoActionBar"
             tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <activity android:name="com.bitcoin_ring.virtualboltcard.VirtualBoltcardActivity"
-                android:exported="true">
+        <activity
+                android:name=".cardEmulation.ScanSuccessful"
+                android:exported="false" />
+        <activity
+                android:name=".cardSetup.NoCardYetActivity"
+                android:exported="false" />
+        <activity
+                android:name=".cardSetup.CardSetupLNbitsCreate"
+                android:exported="false" />
+        <activity
+                android:name=".cardSetup.CardSetupLNbitsImport"
+                android:exported="false" />
+        <activity
+                android:name=".CardSetupManualActivity"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:screenOrientation="portrait">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <service android:name="com.bitcoin_ring.virtualboltcard.cardEmulation.KHostApduService"
-                 android:exported="true"
-                 android:enabled="true"
-                 android:permission="android.permission.BIND_NFC_SERVICE">
+        <service
+                android:name=".cardEmulation.KHostApduService"
+                android:enabled="true"
+                android:exported="true"
+                android:permission="android.permission.BIND_NFC_SERVICE"
+                android:showOnLockScreen="true">
 
             <!-- Intent filter indicating that we support card emulation. -->
             <intent-filter>
-                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <!-- Required XML configuration file, listing the AIDs that we are emulating cards
-                 for. This defines what protocols our card emulation service supports. -->
-            <meta-data android:name="android.nfc.cardemulation.host_apdu_service"
-                       android:resource="@xml/apduservice"/>
+            <!--
+                 Required XML configuration file, listing the AIDs that we are emulating cards
+                 for. This defines what protocols our card emulation service supports.
+            -->
+            <meta-data
+                    android:name="android.nfc.cardemulation.host_apdu_service"
+                    android:resource="@xml/apduservice" />
         </service>
     </application>
 

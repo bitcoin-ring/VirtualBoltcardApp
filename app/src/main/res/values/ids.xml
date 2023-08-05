@@ -1,0 +1,8 @@
+<resources>
+    <item name="fab_action1" type="id"/>
+    <item name="fab_action2" type="id"/>
+    <item name="cardsetup_create" type="id"/>
+    <item name="cardsetup_edit" type="id"/>
+    <item name="action5" type="id"/>
+    <item name="cardsetup_delete" type="id"/>
+</resources>

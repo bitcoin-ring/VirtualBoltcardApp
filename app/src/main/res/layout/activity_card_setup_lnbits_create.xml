@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".cardSetup.CardSetupLNbitsCreate"
+        android:background="#5d7e81">
+
+    <TextView
+            android:id="@+id/importdescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/create_description"
+            android:textColor="@color/headlight"
+            android:textColorHint="#a0a0a0"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/label_editLNbitsUrl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="18sp"
+            android:text="@string/lnbits_server_url"
+            android:textColor="@color/headlight"
+            app:layout_constraintStart_toStartOf="@id/importdescription"
+            app:layout_constraintTop_toBottomOf="@+id/importdescription" />
+            />
+    <EditText
+            android:id="@+id/editLNbitsUrl"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:ems="10"
+            android:inputType="textUri"
+            android:minHeight="48dp"
+            android:textColor="#ffffff"
+            android:hint="https://legend.lnbits.com"
+            android:textColorHint="@color/graytext"
+            app:layout_constraintEnd_toStartOf="@id/createlnbits"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_editLNbitsUrl" />
+
+    <TextView
+            android:id="@+id/label_editLNbitsName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="18sp"
+            android:text="@string/lnbits_wallet_and_cardname"
+            android:textColor="@color/headlight"
+            app:layout_constraintStart_toStartOf="@id/importdescription"
+            app:layout_constraintTop_toBottomOf="@+id/editLNbitsUrl" />
+    />
+    <EditText
+            android:id="@+id/editLNbitsName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:ems="10"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:textColor="#ffffff"
+            android:textColorHint="#a0a0a0"
+            app:layout_constraintEnd_toStartOf="@id/createlnbits"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_editLNbitsName" />
+
+    <TextView
+            android:id="@+id/label_editLNbitsTxLimit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="18sp"
+            android:text="@string/transaction_limit_in_sats"
+            android:textColor="@color/headlight"
+            app:layout_constraintStart_toStartOf="@id/importdescription"
+            app:layout_constraintTop_toBottomOf="@+id/editLNbitsName" />
+    />
+    <EditText
+            android:id="@+id/editLNbitsTxLimit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:ems="10"
+            android:inputType="number|textNoSuggestions"
+            android:minHeight="48dp"
+            android:textColor="#ffffff"
+            android:hint="@string/default_tx_limit"
+            android:textColorHint="@color/graytext"
+            app:layout_constraintEnd_toStartOf="@id/createlnbits"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_editLNbitsTxLimit" />
+
+    <TextView
+            android:id="@+id/label_editLNbitsDailyLimit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="18sp"
+            android:text="@string/daily_limit_in_sats"
+            android:textColor="@color/headlight"
+            app:layout_constraintStart_toStartOf="@id/importdescription"
+            app:layout_constraintTop_toBottomOf="@+id/editLNbitsTxLimit" />
+    />
+    <EditText
+            android:id="@+id/editLNbitsDailyLimit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:ems="10"
+            android:inputType="number|textNoSuggestions"
+            android:minHeight="48dp"
+            android:textColor="#ffffff"
+            android:hint="@string/default_tx_limit"
+            android:textColorHint="@color/graytext"
+            app:layout_constraintEnd_toStartOf="@id/createlnbits"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_editLNbitsDailyLimit" />
+    <Button
+            android:id="@+id/createlnbits"
+            android:layout_margin="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/go"
+            android:textColorHint="#a0a0a0"
+            android:textColor="#ffffff"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/editLNbitsUrl"
+            app:layout_constraintBottom_toBottomOf="@id/editLNbitsUrl" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,14 +1,23 @@
 package com.bitcoin_ring.virtualboltcard.cardEmulation
 
+import android.app.PendingIntent
 import android.app.Service
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.bitcoin_ring.virtualboltcard.db.AppDatabase
+import com.bitcoin_ring.virtualboltcard.db.DatabaseUtils
+import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.io.UnsupportedEncodingException
 import java.math.BigInteger
@@ -92,7 +101,7 @@ class KHostApduService : HostApduService() {
         0x01.toByte(),
         0x00.toByte(),
         0x00.toByte(),
-        0x00.toByte(),
+        0xFF.toByte(),
         0x90.toByte(), 0x00.toByte(), // A_OKAY
     )
 
@@ -131,7 +140,7 @@ class KHostApduService : HostApduService() {
 
     private val NDEF_ID = byteArrayOf(0xE1.toByte(), 0x04.toByte())
 
-    private var NDEF_URI = NdefMessage(createTextRecord("en", "Ciao, come va?", NDEF_ID))
+    private var NDEF_URI = NdefMessage(createTextRecord("en", "virtual boltcard initializing", NDEF_ID))
     private var NDEF_URI_BYTES = NDEF_URI.toByteArray()
     private var NDEF_URI_LEN = fillByteArrayToFixedDimension(
         BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
@@ -142,30 +151,37 @@ class KHostApduService : HostApduService() {
     private var uid = "";
     private var counter = 0;
     private var lnurltemplate = "";
-
+    private lateinit var pendingIntent:PendingIntent
+    private lateinit var notificationIntent: Intent
+    private val CHANNEL_ID = "vbotlcardnotifications"
+    private var notificationId = 0;
+    private lateinit var appDatabase: AppDatabase
+    private lateinit var cardDao: CardDao
+    private var lastSuccessfulScanTime: Long = 0
+    override fun onCreate() {
+        super.onCreate()
+        appDatabase = DatabaseUtils.provideDatabase(this)
+        cardDao = appDatabase.cardDao()
+    }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        /*if (intent?.hasExtra("ndefMessage")!!) {
-            NDEF_URI =
-                NdefMessage(createTextRecord("en", intent.getStringExtra("ndefMessage")!!, NDEF_ID))
+        //return Service.START_REDELIVER_INTENT
+        super.onStartCommand(intent, flags, startId)
 
-            NDEF_URI_BYTES = NDEF_URI.toByteArray()
-            NDEF_URI_LEN = fillByteArrayToFixedDimension(
-                BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
-                2,
-            )
-        }*/
-        Log.i(TAG, "key1 | received preference: " + loadData(this,"key1"))
+        // Use startForeground(), not startService(), to get a foreground service.
 
-        //key1 = intent?.getByteArrayExtra("key1")!!
-        //key2 = intent?.getByteArrayExtra("key2")!!
-        //uid = intent?.getStringExtra("uid")!!
-        //counter = intent?.getIntExtra("counter", 0)!!
-        //lnurltemplate = intent?.getStringExtra("lnurltemplate")!!
-        return Service.START_REDELIVER_INTENT
-        //return Service.START_STICKY
+        return Service.START_STICKY
     }
 
     override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
+        val currentTime = System.currentTimeMillis()
+
+        // Check if the cooldown period has passed
+        if (currentTime - lastSuccessfulScanTime < 200) {
+            // The cooldown has not passed; return a specific response or null
+            Log.wtf(TAG, "processCommandApdu() | still in cooldown for " + (currentTime - lastSuccessfulScanTime) + "ms")
+            return A_ERROR
+        }
+
         //
         // The following flow is based on Appendix E "Example of Mapping Version 2.0 Command Flow"
         // in the NFC Forum specification
@@ -213,8 +229,8 @@ class KHostApduService : HostApduService() {
             // Build our response
             var lnurl = createlnurl()
             Log.i(TAG, "NDEF_READ_BINARY_NLEN triggered. lnurl: " + lnurl)
-            NDEF_URI =
-                NdefMessage(createTextRecord("en", lnurl, NDEF_ID))
+            var uri = Uri.parse(lnurl)
+            NDEF_URI = NdefMessage(NdefRecord.createUri(uri))
 
             NDEF_URI_BYTES = NDEF_URI.toByteArray()
             NDEF_URI_LEN = fillByteArrayToFixedDimension(
@@ -229,8 +245,6 @@ class KHostApduService : HostApduService() {
             Log.i(TAG, "NDEF_READ_BINARY_NLEN triggered. Our Response: " + response.toHex())
 
             READ_CAPABILITY_CONTAINER_CHECK = false
-            counter++;
-            storeData(this, "counter", counter.toString())
             return response
         }
 
@@ -238,8 +252,9 @@ class KHostApduService : HostApduService() {
             var lnurl = createlnurl()
             Log.i(TAG, "NDEF_READ_BINARY triggered. lnurl: " + lnurl)
 
-            NDEF_URI =
-                NdefMessage(createTextRecord("en", lnurl, NDEF_ID))
+            var uri = Uri.parse(lnurl)
+            NDEF_URI = NdefMessage(NdefRecord.createUri(uri))
+            //NDEF_URI = NdefMessage(createTextRecord("en", lnurl, NDEF_ID))
 
             NDEF_URI_BYTES = NDEF_URI.toByteArray()
             NDEF_URI_LEN = fillByteArrayToFixedDimension(
@@ -260,6 +275,11 @@ class KHostApduService : HostApduService() {
             )
             counter++;
             storeData(this, "counter", counter.toString())
+            GlobalScope.launch {
+                val card_id = loadData(this@KHostApduService,"card_id").toInt()
+                cardDao.incCounter(card_id = card_id)
+            }
+            storeData(this, "counter", counter.toString())
 
             Log.i(TAG, "NDEF_READ_BINARY triggered. Full data: " + fullResponse.toHex())
             Log.i(TAG, "READ_BINARY - OFFSET: $offset - LEN: $length")
@@ -276,6 +296,15 @@ class KHostApduService : HostApduService() {
             Log.i(TAG, "NDEF_READ_BINARY triggered. Our Response: " + response.toHex())
 
             READ_CAPABILITY_CONTAINER_CHECK = false
+            /*GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+                withContext(Dispatchers.Main) {
+                };
+            };*/
+            /*if (Settings.canDrawOverlays(this)) {
+                notifyScanOverdraw()
+            }*/
+            notifyScan()
+            lastSuccessfulScanTime = currentTime
             return response
         }
 
@@ -287,7 +316,7 @@ class KHostApduService : HostApduService() {
     }
 
     override fun onDeactivated(reason: Int) {
-        Log.i(TAG, "onDeactivated() Fired! Reason: $reason")
+        Log.i(TAG, "onDeactivated() Fired!")
     }
 
     private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
@@ -335,7 +364,6 @@ class KHostApduService : HostApduService() {
         if (array.size == fixedSize) {
             return array
         }
-
         val start = byteArrayOf(0x00.toByte())
         val filledArray = ByteArray(start.size + array.size)
         System.arraycopy(start, 0, filledArray, 0, start.size)
@@ -345,9 +373,20 @@ class KHostApduService : HostApduService() {
 
 
     fun createlnurl() : String {
-        key1 = loadData(this,"key1").hexStringToByteArray()
-        key2 = loadData(this,"key2").hexStringToByteArray()
-        uid = loadData(this,"uid")
+        val masterKey = MasterKey.Builder(this)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            this,  // Context
+            "VirtualBoltcardSharedPreferences",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        key1 = sharedPreferences.getString("key1", null)!!.hexStringToByteArray()
+        key2 = sharedPreferences.getString("key2", null)!!.hexStringToByteArray()
+        uid = sharedPreferences.getString("uid", null)!!
         counter = loadData(this,"counter").toInt()
         lnurltemplate =loadData(this,"lnurltemplate")
         Log.i(TAG, "key1 | received prefs: " + key1.toHex())
@@ -447,7 +486,19 @@ class KHostApduService : HostApduService() {
             val j = substring(index, index + 2).toInt(16)
             result[i] = j.toByte()
         }
-
         return result
+    }
+
+    fun notifyScan(){
+        GlobalScope.launch {
+            val intent = Intent(this@KHostApduService, ScanSuccessful::class.java).apply {
+                // You can put extra data into the Intent if needed with putExtra
+                // intent.putExtra("key", "value")
+
+                // This flag is needed to start an activity from a context outside of an activity
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or Intent.FLAG_ACTIVITY_NO_HISTORY
+            }
+            startActivity(intent)
+        }
     }
 }

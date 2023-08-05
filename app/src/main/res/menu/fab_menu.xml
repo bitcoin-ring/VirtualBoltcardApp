@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:id="@+id/action1"
+            android:title="Create LNbits Wallet and Card"
+            android:icon="@android:drawable/ic_menu_add" />
+    <item
+            android:id="@+id/action2"
+            android:title="Add existing card from LNbits Wallet"
+            android:icon="@android:drawable/ic_menu_add" />
+    <item
+            android:id="@+id/action3"
+            android:title="Add card manually"
+            android:icon="@android:drawable/ic_menu_add" />
+    <item
+            android:id="@+id/action4"
+            android:title="Edit card"
+            android:icon="@android:drawable/ic_menu_edit" />
+    <item
+            android:id="@+id/action5"
+            android:title="Delete card"
+            android:icon="@android:drawable/ic_menu_delete" />
+</menu>
