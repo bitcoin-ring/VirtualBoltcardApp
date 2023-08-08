@@ -1,6 +1,5 @@
 package com.bitcoin_ring.virtualboltcard.cardEmulation
 
-import android.app.PendingIntent
 import android.app.Service
 import android.content.ContentValues
 import android.content.Context
@@ -16,7 +15,8 @@ import androidx.security.crypto.MasterKey
 import com.bitcoin_ring.virtualboltcard.db.AppDatabase
 import com.bitcoin_ring.virtualboltcard.db.DatabaseUtils
 import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.io.UnsupportedEncodingException
@@ -146,15 +146,11 @@ class KHostApduService : HostApduService() {
         BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
         2,
     )
-    private var key1 = ByteArray(16);
-    private var key2 = ByteArray(16);
-    private var uid = "";
-    private var counter = 0;
-    private var lnurltemplate = "";
-    private lateinit var pendingIntent:PendingIntent
-    private lateinit var notificationIntent: Intent
-    private val CHANNEL_ID = "vbotlcardnotifications"
-    private var notificationId = 0;
+    private var key1 = ByteArray(16)
+    private var key2 = ByteArray(16)
+    private var uid = ""
+    private var counter = 0
+    private var lnurltemplate = ""
     private lateinit var appDatabase: AppDatabase
     private lateinit var cardDao: CardDao
     private var lastSuccessfulScanTime: Long = 0
@@ -227,9 +223,9 @@ class KHostApduService : HostApduService() {
 
         if (NDEF_READ_BINARY_NLEN.contentEquals(commandApdu)) {
             // Build our response
-            var lnurl = createlnurl()
+            val lnurl = createlnurl()
             Log.i(TAG, "NDEF_READ_BINARY_NLEN triggered. lnurl: " + lnurl)
-            var uri = Uri.parse(lnurl)
+            val uri = Uri.parse(lnurl)
             NDEF_URI = NdefMessage(NdefRecord.createUri(uri))
 
             NDEF_URI_BYTES = NDEF_URI.toByteArray()
@@ -249,10 +245,10 @@ class KHostApduService : HostApduService() {
         }
 
         if (commandApdu.size >= 2 && commandApdu.sliceArray(0..1).contentEquals(NDEF_READ_BINARY)) {
-            var lnurl = createlnurl()
+            val lnurl = createlnurl()
             Log.i(TAG, "NDEF_READ_BINARY triggered. lnurl: " + lnurl)
 
-            var uri = Uri.parse(lnurl)
+            val uri = Uri.parse(lnurl)
             NDEF_URI = NdefMessage(NdefRecord.createUri(uri))
             //NDEF_URI = NdefMessage(createTextRecord("en", lnurl, NDEF_ID))
 
@@ -273,10 +269,10 @@ class KHostApduService : HostApduService() {
                 NDEF_URI_LEN.size,
                 NDEF_URI_BYTES.size,
             )
-            counter++;
+            counter++
             storeData(this, "counter", counter.toString())
-            GlobalScope.launch {
-                val card_id = loadData(this@KHostApduService,"card_id").toInt()
+            val card_id = loadData(this@KHostApduService,"card_id").toInt()
+            CoroutineScope(Dispatchers.IO).launch{
                 cardDao.incCounter(card_id = card_id)
             }
             storeData(this, "counter", counter.toString())
@@ -490,15 +486,13 @@ class KHostApduService : HostApduService() {
     }
 
     fun notifyScan(){
-        GlobalScope.launch {
-            val intent = Intent(this@KHostApduService, ScanSuccessful::class.java).apply {
-                // You can put extra data into the Intent if needed with putExtra
-                // intent.putExtra("key", "value")
+        val intent = Intent(this@KHostApduService, ScanSuccessful::class.java).apply {
+            // You can put extra data into the Intent if needed with putExtra
+            // intent.putExtra("key", "value")
 
-                // This flag is needed to start an activity from a context outside of an activity
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or Intent.FLAG_ACTIVITY_NO_HISTORY
-            }
-            startActivity(intent)
+            // This flag is needed to start an activity from a context outside of an activity
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or Intent.FLAG_ACTIVITY_NO_HISTORY
         }
+        startActivity(intent)
     }
 }

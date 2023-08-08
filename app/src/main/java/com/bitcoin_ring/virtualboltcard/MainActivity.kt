@@ -22,6 +22,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bitcoin_ring.virtualboltcard.cardEmulation.KHostApduService
@@ -37,7 +39,6 @@ import com.bitcoin_ring.virtualboltcard.fragments.AdditionalDataLNbitsFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -112,7 +113,7 @@ class MainActivity : AppCompatActivity() {
                             // Set the alert dialog positive (yes) button
                             builder.setPositiveButton("Yes") { _, _ ->
                                 // Do the task you want after user confirmed action here
-                                GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+                                lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
                                     val cards = appDatabase.cardDao().delete(card)
                                     withContext(Dispatchers.Main) {
                                         val intent =
@@ -154,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+        lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val cardcount = cardDao.getAll().count()
             withContext(Dispatchers.Main) {
                 if (cardcount == 0) {
@@ -168,7 +169,7 @@ class MainActivity : AppCompatActivity() {
         }
         val active_card_id = loadData(this, "card_id")
         var active_card_index = 0
-        GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+        lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val cards = appDatabase.cardDao().getAll()
             var index = 0
             cards.forEach { card ->
@@ -181,7 +182,7 @@ class MainActivity : AppCompatActivity() {
             }
             withContext(Dispatchers.Main) {
                 // Set the adapter in the main thread
-                viewPager.adapter = CardAdapter(cards)
+                viewPager.adapter = CardAdapter(cards, lifecycleScope)
                 viewPager.setCurrentItem(active_card_index, false)
             }
         }
@@ -193,7 +194,7 @@ class MainActivity : AppCompatActivity() {
                 val adapter =  viewPager.adapter as? CardAdapter
                 currentCard = adapter?.getCard(position)!!
                 val card = currentCard!!
-                GlobalScope.launch(Dispatchers.IO) {
+                lifecycleScope.launch(Dispatchers.IO) {
                     card.activate(this@MainActivity)
                     withContext(Dispatchers.Main) {
                         //add more types here
@@ -297,7 +298,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-class CardAdapter(private val cards: List<Card>) : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
+class CardAdapter(private val cards: List<Card>,private val lifecycleScope: LifecycleCoroutineScope) : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
     class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardImage: ImageView = itemView.findViewById(R.id.card_image)
@@ -320,7 +321,7 @@ class CardAdapter(private val cards: List<Card>) : RecyclerView.Adapter<CardAdap
         holder.cardImage.setImageDrawable(drawable)
         //holder.cardUid.text = formatUid(card.uid)
         //holder.cardName.text = card.name
-        GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+        lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val context = holder.itemView.context
             var bitmap=drawTextToDrawable(
                 context,
@@ -365,10 +366,10 @@ class CardAdapter(private val cards: List<Card>) : RecyclerView.Adapter<CardAdap
         val scale = resources.displayMetrics.density
         Log.i("BitmapScale", scale.toString())
         var bitmap = BitmapFactory.decodeResource(resources, drawableId)
-        var bitmapConfig: android.graphics.Bitmap.Config? = bitmap.config
+        var bitmapConfig: Bitmap.Config? = bitmap.config
         // set default bitmap config if none
         if (bitmapConfig == null) {
-            bitmapConfig = android.graphics.Bitmap.Config.ARGB_8888
+            bitmapConfig = Bitmap.Config.ARGB_8888
         }
         // resource bitmaps are immutable,
         // so we need to convert it to mutable one

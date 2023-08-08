@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.bitcoin_ring.virtualboltcard.db.AppDatabase
@@ -23,7 +24,6 @@ import com.bitcoin_ring.virtualboltcard.db.DatabaseUtils
 import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
 import com.bitcoin_ring.virtualboltcard.db.entities.Card
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -45,7 +45,6 @@ class CardSetupManualActivity : AppCompatActivity() {
     private lateinit var editK2: EditText
     private lateinit var textView: TextView
     private lateinit var mTurnNfcDialog: AlertDialog
-    private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
     private lateinit var sharedPreferences: SharedPreferences
     private var card_id = -1
     private var action = -1
@@ -59,7 +58,7 @@ class CardSetupManualActivity : AppCompatActivity() {
         action = intent.getIntExtra("action", 0) // 0 is the default value
         setContentView(R.layout.activity_card_setup_manual)
 
-        val bcproviders = BouncyCastleProvider();
+        val bcproviders = BouncyCastleProvider()
         Security.addProvider(bcproviders)
         for (provider: Provider in Security.getProviders()) {
             provider.services.forEach { service ->
@@ -203,7 +202,7 @@ class CardSetupManualActivity : AppCompatActivity() {
                     )
                 }
                 // Now, insert the card into the database
-                GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+                lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
                     var set_active_card_id = 0
                     if(action == R.id.cardsetup_create) {
                         set_active_card_id = appDatabase.cardDao().insert(card).toInt()
@@ -221,7 +220,7 @@ class CardSetupManualActivity : AppCompatActivity() {
                         )
                         set_active_card_id = card.id
                     }
-                    var active_card: Card = appDatabase.cardDao().get(set_active_card_id)[0]
+                    val active_card: Card = appDatabase.cardDao().get(set_active_card_id)[0]
                     active_card.activate(this@CardSetupManualActivity)
 
                     withContext(Dispatchers.Main) {
@@ -243,30 +242,30 @@ class CardSetupManualActivity : AppCompatActivity() {
 
 
     private fun loadCardData() {
-        GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+        lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val card: Card = appDatabase.cardDao().get(card_id).first()
             withContext(Dispatchers.Main) {
-                var name = card.name
+                val name = card.name
                 if (name.length > 0) {
                     editName.setText(name)
                 }
-                var countertxt = card.counter.toString()
+                val countertxt = card.counter.toString()
                 if (countertxt.length > 0) {
                     editCounter.setText(countertxt)
                 }
-                var lnurltemplate = card.url
+                val lnurltemplate = card.url
                 if (lnurltemplate.length > 0) {
                     editURL.setText(lnurltemplate)
                 }
-                var key1 = card.key1
+                val key1 = card.key1
                 if (key1.length > 0) {
                     editK1.setText(key1)
                 }
-                var key2 = card.key2
+                val key2 = card.key2
                 if (key2.length > 0) {
                     editK2.setText(key2)
                 }
-                var uid = card.uid
+                val uid = card.uid
                 if (uid.length > 0) {
                     editUID.setText(uid)
                 }

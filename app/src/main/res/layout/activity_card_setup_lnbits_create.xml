@@ -41,7 +41,7 @@
             android:inputType="textUri"
             android:minHeight="48dp"
             android:textColor="#ffffff"
-            android:hint="https://legend.lnbits.com"
+            android:hint="@string/lnbits_default_url"
             android:textColorHint="@color/graytext"
             app:layout_constraintEnd_toStartOf="@id/createlnbits"
             app:layout_constraintStart_toStartOf="parent"

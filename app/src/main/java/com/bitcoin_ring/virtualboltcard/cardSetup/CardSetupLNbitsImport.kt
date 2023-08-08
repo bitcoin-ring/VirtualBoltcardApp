@@ -13,18 +13,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.bitcoin_ring.virtualboltcard.CardSetupManualActivity
 import com.bitcoin_ring.virtualboltcard.R
-import com.bitcoin_ring.virtualboltcard.db.entities.Card
-import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
 import com.bitcoin_ring.virtualboltcard.db.AppDatabase
 import com.bitcoin_ring.virtualboltcard.db.DatabaseUtils
+import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
+import com.bitcoin_ring.virtualboltcard.db.entities.Card
 import com.bitcoin_ring.virtualboltcard.helper.Helper
 import com.bitcoin_ring.virtualboltcard.helper.isValidUrl
 import com.google.gson.JsonParser
 import com.google.zxing.Result
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.dm7.barcodescanner.zxing.ZXingScannerView
@@ -60,11 +60,11 @@ class CardSetupLNbitsImport : AppCompatActivity(), ZXingScannerView.ResultHandle
             client.newCall(request).enqueue(object: Callback {
                 override fun onResponse(call: Call, response: Response) {
                     // Now parse this JSON (see next step)
-                    GlobalScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
+                    lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
                         val responsestring = response.body?.string()
                         try {
                             val carddata = JsonParser.parseString(responsestring).asJsonObject
-                            var card = Card(
+                            val card = Card(
                                 name = carddata.get("card_name").asString,
                                 type = "AdditionalDataLNbits",
                                 uid = "00000000000000",
@@ -75,7 +75,7 @@ class CardSetupLNbitsImport : AppCompatActivity(), ZXingScannerView.ResultHandle
                                 drawableName = "virtualboltcard_lnbits"
                             )
                             val newcard_id = appDatabase.cardDao().insert(card).toInt()
-                            var newcard: Card = appDatabase.cardDao().get(newcard_id)[0]
+                            val newcard: Card = appDatabase.cardDao().get(newcard_id)[0]
                             newcard.activate(this@CardSetupLNbitsImport)
                             Log.i("ImportCard", newcard_id.toString())
                             withContext(Dispatchers.Main) {
@@ -120,6 +120,7 @@ class CardSetupLNbitsImport : AppCompatActivity(), ZXingScannerView.ResultHandle
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 // If request is cancelled, the result arrays are empty.

@@ -38,5 +38,6 @@
     <string name="key_1">Key 1</string>
     <string name="key_2">Key 2</string>
     <string name="default_tx_limit">100000</string>
+    <string name="lnbits_default_url">https://legend.lnbits.com</string>
 
 </resources>

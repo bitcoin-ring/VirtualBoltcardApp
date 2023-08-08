@@ -21,7 +21,6 @@ import com.bitcoin_ring.virtualboltcard.helper.isValidUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.dm7.barcodescanner.zxing.ZXingScannerView
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -38,8 +37,6 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
     private lateinit var editLNbitsDailyLimit: EditText
     private lateinit var appDatabase: AppDatabase
     private lateinit var cardDao: CardDao
-    private val CAMERA_REQUEST_CODE = 100
-    private lateinit var scannerView: ZXingScannerView   // Programmatically initialize the scanner view
     private var serverUrl = ""
     private var hintName = Helper.createRandomWord()
 
@@ -56,16 +53,16 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
         button_create = findViewById<View>(R.id.createlnbits) as Button
         button_create.setOnClickListener {
             if (editLNbitsName.text.toString() == ""){
-                editLNbitsName.setText(hintName);
+                editLNbitsName.setText(hintName)
             }
             if (editLNbitsTxLimit.text.toString() == ""){
-                editLNbitsTxLimit.setText(R.string.default_tx_limit);
+                editLNbitsTxLimit.setText(R.string.default_tx_limit)
             }
             if (editLNbitsDailyLimit.text.toString() == ""){
-                editLNbitsDailyLimit.setText(R.string.default_tx_limit);
+                editLNbitsDailyLimit.setText(R.string.default_tx_limit)
             }
             if (editLNbitsUrl.text.toString() == ""){
-                editLNbitsUrl.setText("https://legend.lnbits.com");
+                editLNbitsUrl.setText(R.string.lnbits_default_url)
             }
             serverUrl = editLNbitsUrl.text.toString()
             if (!serverUrl.isValidUrl()){
@@ -92,7 +89,7 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
                         put("comment_chars", 0)
                     }
                     Log.i("funding", funding.toString())
-                        if (serverUrl.toString().isValidUrl() == true && Helper.isNetworkAvailable(this@CardSetupLNbitsCreate)) {
+                        if (serverUrl.isValidUrl() == true && Helper.isNetworkAvailable(this@CardSetupLNbitsCreate)) {
                         performRequests(serverUrl, card, funding)
                     }
                 }
@@ -194,7 +191,7 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
                         if (response3.isSuccessful) {
                             Log.i("Response3", "successfull")
                             val response3Body = response3.body?.string()
-                            val carddata = JSONObject(response3Body)
+                            val carddata = JSONObject(response3Body!!)
                             Log.i("Response3", response3Body!!)
 
                             val additionalData = AdditionalCardData.LNbits(
@@ -212,7 +209,7 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
                                     .toString() + "?p=<!--SUN-->&c=<!--MAC-->",
                                 key1 = carddata.get("k1").toString(),
                                 key2 = carddata.get("k2").toString(),
-                                counter = 0,
+                                counter = 1,
                                 drawableName = "virtualboltcard_lnbits",
                                 additionalCardData = additionalData
                             )
