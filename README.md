@@ -1,4 +1,4 @@
-# Virtul Boltcard
+# Virtual Boltcard
 This app uses Android HCE to emulate a Boltcard.
 ...
 
