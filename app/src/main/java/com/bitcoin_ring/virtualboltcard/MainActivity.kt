@@ -63,7 +63,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         viewPager = findViewById(R.id.viewPager)
         val fab: FloatingActionButton = findViewById(R.id.fab)
-
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        initNFCFunction()
         fab.setOnClickListener { view ->
             Log.d("FAB", "FAB Clicked!")
             val popupMenu = PopupMenu(this, view)
@@ -148,13 +149,20 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, VirtualBoltcardActivity::class.java)
             startActivity(intent)
         }*/
-        initNFCFunction()
-        initService()
+        Log.i("FEATURE_NFC_HOST_CARD_EMULATION", packageManager.hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION).toString())
+        if (checkNFCEnable()) {
+            initService()
+        }
 
     }
 
     override fun onResume() {
         super.onResume()
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        initNFCFunction()
+        if (!checkNFCEnable()) {
+            return;
+        }
         lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val cardcount = cardDao.getAll().count()
             withContext(Dispatchers.Main) {
@@ -163,9 +171,6 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
             }
-        }
-        if (mNfcAdapter?.isEnabled == true) {
-            //TODO: Handling if NFC has been disabled
         }
         val active_card_id = loadData(this, "card_id")
         var active_card_index = 0
@@ -230,11 +235,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun initNFCFunction() {
-        if (supportNfcHceFeature()) {
-            // Prevent phone that doesn't support NFC to trigger dialog
-            if (supportNfcHceFeature()) {
-                showTurnOnNfcDialog()
-            }
+        // Prevent phone that doesn't support NFC to trigger dialog
+        if (!supportNfcHceFeature()) {
+            showTurnOnNfcDialog()
         }
     }
 
@@ -278,6 +281,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkNFCEnable(): Boolean {
+        Log.i("checkNFCEnabled", mNfcAdapter.toString())
         return if (mNfcAdapter == null) {
             //textView.text = getString(R.string.tv_noNfc)
             false
