@@ -24,7 +24,7 @@ but once its on hce works and we are not quiet shure yet if thats a good or a ba
 - Everyone with access to this data is able to access your sats.
 - If you create an lnbits wallet from within the app, the api-keys are saved as well in the encrypted mssql database.
 - I tried to get this reasonably safe, but i am **not** an experienced app-developer so i probably have completely missed that. In that case please leave an issue so we can fix it :-)
-- Boltcards are not the safest technology and that doesn't get any better by putting it on your phone.
+- a Boltcard is a offline device which keeps the cards url, keys and counter. You decrease security by putting this data directly onto your phone.
 
 ## Ref
 - https://github.com/underwindfall/NFCAndroid
