@@ -14,7 +14,7 @@
     <string name="edit_card_name">Edit Bolt Card</string>
     <string name="card_saved">Card saved</string>
     <string name="finish_import">Card created, you still have to supply UID and counter</string>
-    <string name="import_description">Please enter the the url created by LNbits and click go</string>
+    <string name="import_description">Please enter the url created by LNbits and click go</string>
     <string name="create_description">Enter the Url of your LNbits Server and hit \"Go\"</string>
     <string name="finish_lnbits_create">LNbits card created</string>
     <string name="create_card_notification"><b>You do not have setup a card yet.</b>\n Please select from one of the options below.</string>
