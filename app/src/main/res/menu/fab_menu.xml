@@ -16,7 +16,11 @@
             android:title="Edit card"
             android:icon="@android:drawable/ic_menu_edit" />
     <item
-            android:id="@+id/action5"
-            android:title="Delete card"
-            android:icon="@android:drawable/ic_menu_delete" />
+        android:id="@+id/action5"
+        android:title="Delete card"
+        android:icon="@android:drawable/ic_menu_delete" />
+    <item
+        android:id="@+id/action6"
+        android:title="Preferences"
+        android:icon="@android:drawable/ic_menu_preferences" />
 </menu>

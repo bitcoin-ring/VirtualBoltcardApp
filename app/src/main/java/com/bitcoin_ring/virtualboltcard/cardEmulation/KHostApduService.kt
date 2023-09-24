@@ -10,6 +10,7 @@ import android.nfc.NdefRecord
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
 import android.util.Log
+import androidx.preference.PreferenceManager
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.bitcoin_ring.virtualboltcard.db.AppDatabase
@@ -175,7 +176,12 @@ class KHostApduService : HostApduService() {
 
     override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
         val currentTime = System.currentTimeMillis()
-
+        val appPreferences = PreferenceManager.getDefaultSharedPreferences(this /* context */)
+        val enablehceservice = appPreferences.getBoolean("enable_hce_service", true)
+        if (!enablehceservice){
+            return byteArrayOf()
+            //byteArrayOf(0x6A.toByte(), 0x82.toByte())
+        }
         // Check if the cooldown period has passed
         if (currentTime - lastSuccessfulScanTime < 200) {
             // The cooldown has not passed; return a specific response or null
