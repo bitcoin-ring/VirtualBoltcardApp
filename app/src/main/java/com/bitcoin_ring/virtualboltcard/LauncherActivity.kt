@@ -20,6 +20,10 @@ class LauncherActivity : AppCompatActivity() {
         biometricPrompt = BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
+                if ((errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) || (errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL)){
+                    startActivity(Intent(this@LauncherActivity, MainActivity::class.java))
+                    finish()
+                }
                 // Handle the authentication error (e.g., show a message or close the app)
             }
 
@@ -32,7 +36,7 @@ class LauncherActivity : AppCompatActivity() {
 
             override fun onAuthenticationFailed() {
                 super.onAuthenticationFailed()
-                finish();
+                finish()
                 // Handle the failure (e.g., show a message)
             }
         })
@@ -49,7 +53,9 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        biometricPrompt.authenticate(promptInfo)
+        if (::biometricPrompt.isInitialized) {
+            biometricPrompt.authenticate(promptInfo)
+        }
     }
 
 }

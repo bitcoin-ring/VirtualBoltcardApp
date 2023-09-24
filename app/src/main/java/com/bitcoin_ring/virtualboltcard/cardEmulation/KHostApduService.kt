@@ -18,6 +18,11 @@ import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.bouncycastle.crypto.BlockCipher
+import org.bouncycastle.crypto.CipherParameters
+import org.bouncycastle.crypto.engines.AESEngine
+import org.bouncycastle.crypto.macs.CMac
+import org.bouncycastle.crypto.params.KeyParameter
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.io.UnsupportedEncodingException
 import java.math.BigInteger
@@ -421,6 +426,18 @@ class KHostApduService : HostApduService() {
     }
 
     fun myCMAC(key: ByteArray, data: ByteArray): ByteArray {
+
+        val params: CipherParameters = KeyParameter(key)
+        val aes: BlockCipher = AESEngine()
+        val mac: CMac = CMac(aes)
+        mac.init(params)
+        mac.update(data, 0, data.size)
+        var out:ByteArray = ByteArray(mac.macSize)
+        val ret = mac.doFinal(out, 0)
+        return out
+    }
+
+    fun myCMACAndroid(key: ByteArray, data: ByteArray): ByteArray {
         Log.i(ContentValues.TAG, "CMAC-key: " + key.toHexString())
         Log.i(ContentValues.TAG, "CMAC-data: " + data.toHexString())
         val mac = Mac.getInstance("AESCMAC", "AndroidOpenSSL")

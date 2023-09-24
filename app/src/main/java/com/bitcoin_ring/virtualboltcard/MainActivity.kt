@@ -161,7 +161,7 @@ class MainActivity : AppCompatActivity() {
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this)
         initNFCFunction()
         if (!checkNFCEnable()) {
-            return;
+            return
         }
         lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val cardcount = cardDao.getAll().count()
