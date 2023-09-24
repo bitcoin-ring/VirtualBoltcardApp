@@ -21,7 +21,8 @@
 
         <SwitchPreferenceCompat
             app:key="enable_hce_service"
-            app:title="@string/enable_hce_service" />
+            app:title="@string/enable_hce_service"
+            app:defaultValue="true"/>
         <SwitchPreferenceCompat
             app:key="enable_pin"
             app:title="@string/enable_pin" />
