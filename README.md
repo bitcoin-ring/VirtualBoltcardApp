@@ -10,14 +10,14 @@ this is because you have access to a lnbits wallet once the app is started. Also
     You can specify serverurl name and limits or just go with the defaults, currently legend.lnbits.com
     The app saves the **apikey and tracks the balance of your account**. the qrcode for the paylink is shown. 
     if you tap it a installed wallet that can handle lnurlp should open.
-   **currently there is no export of the cards, so make shure if you setup a new LNBits-card to open the wallet and backup as usual**
+   **currently there is no export of the cards, so make sure if you setup a new LNBits-card to open the wallet and backup as usual**
 2. import an existing boltcard from an lnbits wallet. Qrcode or url accepted.
 3. manually setup an existing boltcard
 - you can setup multiple cards (the "+"-bubble in the lower right of the screen is the only options currently.)
 - active card is always the visual card. Just swipe another card in view to activate it. 
 - there is currently no way to disable emulation, so you have to deactivate nfc to do that atm.
 - emulation currently also works from the lockscreen. it stops if the screen is black, 
-but once its on hce works and we are not quiet shure yet if thats a good or a bad thing.
+but once its on hce works and we are not quiet sure yet if thats a good or a bad thing.
 
 ## Security
 - The app stores your boltcard url, keys and counter in encrypted settings-storage and an encrypted mssql database the password is randomly created on the first launch and saved to the encrypted settings-storage.
