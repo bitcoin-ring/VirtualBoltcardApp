@@ -137,6 +137,11 @@ class MainActivity : AppCompatActivity() {
                         }
                         true
                     }
+                    R.id.action6 -> {
+                        val intent = Intent(this, SettingsActivity::class.java)
+                        startActivity(intent)
+                        true
+                    }
                     else -> false
                 }
             }
