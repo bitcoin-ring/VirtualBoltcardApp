@@ -6,6 +6,16 @@
         android:layout_height="match_parent"
         tools:context="com.bitcoin_ring.virtualboltcard.CardSetupManualActivity"
         android:background="#5d7e81">
+    <ImageView
+        android:id="@+id/importimage"
+        android:layout_width="match_parent"
+        android:layout_height="80sp"
+        android:layout_margin="0sp"
+        android:scaleType="fitEnd"
+        android:background="@color/colorPrimaryDark"
+        app:srcCompat="@drawable/virtualboltcard_manual"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <EditText
             style="@style/DarkEditText"
             android:id="@+id/editName"
@@ -21,7 +31,7 @@
             android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/importimage" />
     <EditText
             android:id="@+id/editUID"
             style="@style/DarkEditText"

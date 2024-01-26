@@ -6,7 +6,16 @@
         android:layout_height="match_parent"
         tools:context=".cardSetup.CardSetupLNbitsCreate"
         android:background="#5d7e81">
-
+    <ImageView
+        android:id="@+id/importimage"
+        android:layout_width="match_parent"
+        android:layout_height="80sp"
+        android:layout_margin="0sp"
+        android:scaleType="fitEnd"
+        android:background="@color/colorPrimaryDark"
+        app:srcCompat="@drawable/virtualboltcard_lnbits_create"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <TextView
             android:id="@+id/importdescription"
             android:layout_width="match_parent"
@@ -18,8 +27,8 @@
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="@id/importimage"
+        app:layout_constraintTop_toBottomOf="@+id/importimage" />
 
     <TextView
             android:id="@+id/label_editLNbitsUrl"
@@ -31,7 +40,6 @@
             android:textColor="@color/headlight"
             app:layout_constraintStart_toStartOf="@id/importdescription"
             app:layout_constraintTop_toBottomOf="@+id/importdescription" />
-            />
     <EditText
             android:id="@+id/editLNbitsUrl"
             android:layout_width="0dp"
