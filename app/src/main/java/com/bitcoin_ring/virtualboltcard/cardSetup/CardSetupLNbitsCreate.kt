@@ -108,128 +108,162 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
             .build()
 
         val response1 = client.newCall(request1).execute()
+        var invoiceKey = "";
+        var adminKey = "";
+        // Get usr and wal from the redirected URL
+        var usr = ""
+        var wal = ""
+        var redirectUrl = ""
+
         if (response1.isSuccessful) {
+            redirectUrl = response1.request.url.toString()
+            // Get usr and wal from the redirected URL
+            usr = redirectUrl.substringAfter("?usr=").substringBefore("&")
+            wal = redirectUrl.substringAfter("&wal=")
             val response1Body = response1.body?.string()
-            val redirectUrl = response1.request.url.toString()
             Log.i("WalletUrl", redirectUrl)
             val pattern = Pattern.compile("<strong>Admin key: <\\/strong><em>(.*?)<\\/em>")
             val matcher = pattern.matcher(response1Body)
-            val adminKey = if (matcher.find()) matcher.group(1) else ""
+            adminKey = if (matcher.find()) matcher.group(1) else ""
             Log.i("Adminkey", adminKey)
-            val pattern2 = Pattern.compile("<strong>Invoice\\/read key: <\\/strong><em>(.*?)<\\/em>")
+            val pattern2 =
+                Pattern.compile("<strong>Invoice\\/read key: <\\/strong><em>(.*?)<\\/em>")
             val matcher2 = pattern2.matcher(response1Body)
-            val invoiceKey = if (matcher2.find()) matcher2.group(1) else ""
+            invoiceKey = if (matcher2.find()) matcher2.group(1) else ""
             Log.i("Invoicekey", invoiceKey)
-            if (adminKey.isEmpty()){
-                return@withContext
+        }
+        if(adminKey.isEmpty()){
+            //try creating an account
+            val accountJson = JSONObject().apply {
+                put("name", cardJson.get("card_name").toString())
             }
-            // Get usr and wal from the redirected URL
-            val usr = redirectUrl.substringAfter("?usr=").substringBefore("&")
-            val wal = redirectUrl.substringAfter("&wal=")
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = accountJson.toString().toRequestBody(mediaType)
+            val request1acc = Request.Builder()
+                .url("$serverUrl/api/v1/account")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .post(requestBody)
+                .build()
+            val response1Acc = client.newCall(request1acc).execute()
+            Log.i("response1Acc", request1acc.toString())
+            // Only proceed with Request 3 if Request 2 is successful
+            if (response1Acc.isSuccessful) {
+                val response1AccBody = response1Acc.body?.string()
+                val accountData = JSONObject(response1AccBody!!)
+                usr = accountData.get("user").toString()
+                wal = accountData.get("id").toString()
+                adminKey = accountData.get("adminkey").toString()
+                invoiceKey = accountData.get("inkey").toString()
+                Log.i("AccountData",accountData.toString( ))
+                redirectUrl = serverUrl + "/wallet?usr=" + usr;
+            }
+        }
+        if (adminKey.isEmpty()) {
+            return@withContext
+        }
+        // Request2
+        val request2 = Request.Builder()
+            .url("$serverUrl/extensions?usr=$usr&enable=boltcards")
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-Api-Key", adminKey)
+            .build()
 
-            // Request2
-            val request2 = Request.Builder()
-                .url("$serverUrl/extensions?usr=$usr&enable=boltcards")
+        val response2 = client.newCall(request2).execute()
+        val response2Body = response2.body?.string()
+        //Log.i("Response2", response2Body!!)
+        Log.i("Response2", request2.toString())
+        // Only proceed with Request 3 if Request 2 is successful
+        if (response2.isSuccessful) {
+            val request22 = Request.Builder()
+                .url("$serverUrl/extensions?usr=$usr&enable=lnurlp")
                 .addHeader("Content-Type", "application/json")
                 .addHeader("X-Api-Key", adminKey)
                 .build()
+            Log.i("Response22", request22.toString())
 
-            val response2 = client.newCall(request2).execute()
-            val response2Body = response2.body?.string()
+            val response22 = client.newCall(request22).execute()
+            val response22Body = response22.body?.string()
             //Log.i("Response2", response2Body!!)
-            Log.i("Response2", request2.toString())
+
             // Only proceed with Request 3 if Request 2 is successful
-            if (response2.isSuccessful) {
-                val request22 = Request.Builder()
-                    .url("$serverUrl/extensions?usr=$usr&enable=lnurlp")
+            if (response22.isSuccessful) {
+                Log.i("Response22", "successfull")
+                // Request3
+                val mediaType = "application/json; charset=utf-8".toMediaType()
+                val requestBody = fundingJson.toString().toRequestBody(mediaType)
+
+                val request23 = Request.Builder()
+                    .url("$serverUrl/lnurlp/api/v1/links")
                     .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json")
                     .addHeader("X-Api-Key", adminKey)
+                    .post(requestBody)
                     .build()
-                Log.i("Response22", request22.toString())
 
-                val response22 = client.newCall(request22).execute()
-                val response22Body = response22.body?.string()
-                //Log.i("Response2", response2Body!!)
-
-                // Only proceed with Request 3 if Request 2 is successful
-                if (response22.isSuccessful) {
-                    Log.i("Response22", "successfull")
+                val response23 = client.newCall(request23).execute()
+                val response23Body = response23.body?.string()
+                Log.i("Response23", response23Body!!)
+                // Parse the response
+                if (response23.isSuccessful) {
+                    Log.i("Response23", "successfull")
+                    val fundingdata = JSONObject(response23Body)
+                    Log.i("Response23", response23Body!!)
                     // Request3
                     val mediaType = "application/json; charset=utf-8".toMediaType()
-                    val requestBody = fundingJson.toString().toRequestBody(mediaType)
+                    val requestBody = cardJson.toString().toRequestBody(mediaType)
 
-                    val request23 = Request.Builder()
-                        .url("$serverUrl/lnurlp/api/v1/links")
+                    val request3 = Request.Builder()
+                        .url("$serverUrl/boltcards/api/v1/cards")
                         .addHeader("Content-Type", "application/json")
                         .addHeader("Accept", "application/json")
                         .addHeader("X-Api-Key", adminKey)
                         .post(requestBody)
                         .build()
 
-                    val response23 = client.newCall(request23).execute()
-                    val response23Body = response23.body?.string()
-                    Log.i("Response23", response23Body!!)
+                    val response3 = client.newCall(request3).execute()
                     // Parse the response
-                    if (response23.isSuccessful) {
-                        Log.i("Response23", "successfull")
-                        val fundingdata = JSONObject(response23Body)
-                        Log.i("Response23", response23Body!!)
-                        // Request3
-                        val mediaType = "application/json; charset=utf-8".toMediaType()
-                        val requestBody = cardJson.toString().toRequestBody(mediaType)
+                    if (response3.isSuccessful) {
+                        Log.i("Response3", "successfull")
+                        val response3Body = response3.body?.string()
+                        val carddata = JSONObject(response3Body!!)
+                        Log.i("Response3", response3Body!!)
 
-                        val request3 = Request.Builder()
-                            .url("$serverUrl/boltcards/api/v1/cards")
-                            .addHeader("Content-Type", "application/json")
-                            .addHeader("Accept", "application/json")
-                            .addHeader("X-Api-Key", adminKey)
-                            .post(requestBody)
-                            .build()
-
-                        val response3 = client.newCall(request3).execute()
-                        // Parse the response
-                        if (response3.isSuccessful) {
-                            Log.i("Response3", "successfull")
-                            val response3Body = response3.body?.string()
-                            val carddata = JSONObject(response3Body!!)
-                            Log.i("Response3", response3Body!!)
-
-                            val additionalData = AdditionalCardData.LNbits(
-                                wallet_url = redirectUrl, // replace with actual data
-                                funding_url = fundingdata.get("lnurl").toString(), // replace with actual data
-                                apikey = adminKey, // replace with actual data
-                                invoicekey = invoiceKey // replace with actual data
+                        val additionalData = AdditionalCardData.LNbits(
+                            wallet_url = redirectUrl, // replace with actual data
+                            funding_url = fundingdata.get("lnurl").toString(), // replace with actual data
+                            apikey = adminKey, // replace with actual data
+                            invoicekey = invoiceKey // replace with actual data
+                        )
+                        // Do something with the resultJson
+                        val card = Card(
+                            name = carddata.get("card_name").toString(),
+                            type = "AdditionalDataLNbits",
+                            uid = carddata.get("uid").toString(),
+                            url = serverUrl.replace("https://","lnurlw://") + "/boltcards/api/v1/scan/" + carddata.get("external_id")
+                                .toString() + "?p=<!--SUN-->&c=<!--MAC-->",
+                            key1 = carddata.get("k1").toString(),
+                            key2 = carddata.get("k2").toString(),
+                            counter = 1,
+                            drawableName = "virtualboltcard_lnbits",
+                            additionalCardData = additionalData
+                        )
+                        val newcard_id = appDatabase.cardDao().insert(card).toInt()
+                        val newcard: Card = appDatabase.cardDao().get(newcard_id)[0]
+                        newcard.activate(this@CardSetupLNbitsCreate)
+                        Log.i("ImportCard", newcard_id.toString())
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@CardSetupLNbitsCreate,
+                                getString(R.string.finish_lnbits_create),
+                                Toast.LENGTH_LONG,
+                            ).show()
+                            val intent = Intent(
+                                this@CardSetupLNbitsCreate,
+                                MainActivity::class.java
                             )
-                            // Do something with the resultJson
-                            val card = Card(
-                                name = carddata.get("card_name").toString(),
-                                type = "AdditionalDataLNbits",
-                                uid = carddata.get("uid").toString(),
-                                url = serverUrl.replace("https://","lnurlw://") + "/boltcards/api/v1/scan/" + carddata.get("external_id")
-                                    .toString() + "?p=<!--SUN-->&c=<!--MAC-->",
-                                key1 = carddata.get("k1").toString(),
-                                key2 = carddata.get("k2").toString(),
-                                counter = 1,
-                                drawableName = "virtualboltcard_lnbits",
-                                additionalCardData = additionalData
-                            )
-                            val newcard_id = appDatabase.cardDao().insert(card).toInt()
-                            val newcard: Card = appDatabase.cardDao().get(newcard_id)[0]
-                            newcard.activate(this@CardSetupLNbitsCreate)
-                            Log.i("ImportCard", newcard_id.toString())
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    this@CardSetupLNbitsCreate,
-                                    getString(R.string.finish_lnbits_create),
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                                val intent = Intent(
-                                    this@CardSetupLNbitsCreate,
-                                    MainActivity::class.java
-                                )
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                startActivity(intent)
-                            }
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            startActivity(intent)
                         }
                     }
                 }
