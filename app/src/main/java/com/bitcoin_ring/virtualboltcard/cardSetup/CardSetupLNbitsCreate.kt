@@ -24,10 +24,12 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+
 
 class CardSetupLNbitsCreate : AppCompatActivity() {
     private lateinit var button_create: Button
@@ -162,11 +164,13 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
         if (adminKey.isEmpty()) {
             return@withContext
         }
+        val emptyreqbody = RequestBody.create(null, ByteArray(0))
         // Request2
         val request2 = Request.Builder()
-            .url("$serverUrl/extensions?usr=$usr&enable=boltcards")
+            .url("$serverUrl/api/v1/extension/boltcards/enable?usr=$usr")
             .addHeader("Content-Type", "application/json")
             .addHeader("X-Api-Key", adminKey)
+            .put(emptyreqbody)
             .build()
 
         val response2 = client.newCall(request2).execute()
@@ -176,9 +180,10 @@ class CardSetupLNbitsCreate : AppCompatActivity() {
         // Only proceed with Request 3 if Request 2 is successful
         if (response2.isSuccessful) {
             val request22 = Request.Builder()
-                .url("$serverUrl/extensions?usr=$usr&enable=lnurlp")
+                .url("$serverUrl/api/v1/extension/lnurlp/enable?usr=$usr")
                 .addHeader("Content-Type", "application/json")
                 .addHeader("X-Api-Key", adminKey)
+                .put(emptyreqbody)
                 .build()
             Log.i("Response22", request22.toString())
 
