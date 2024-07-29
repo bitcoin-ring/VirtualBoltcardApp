@@ -10,8 +10,10 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -43,6 +45,7 @@ class CardSetupManualActivity : AppCompatActivity() {
     private lateinit var editCounter: EditText
     private lateinit var editK1: EditText
     private lateinit var editK2: EditText
+    private lateinit var editCardType: Spinner
     private lateinit var textView: TextView
     private lateinit var mTurnNfcDialog: AlertDialog
     private lateinit var sharedPreferences: SharedPreferences
@@ -75,6 +78,15 @@ class CardSetupManualActivity : AppCompatActivity() {
         editK1 = findViewById<View>(R.id.editK1) as EditText
         editK2 = findViewById<View>(R.id.editK2) as EditText
         textView = findViewById<View>(R.id.textView) as TextView
+        editCardType = findViewById(R.id.cardType)
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.spinner_options,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            editCardType.adapter = adapter
+        }
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
@@ -114,12 +126,14 @@ class CardSetupManualActivity : AppCompatActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
+
         editName.setText(savedInstanceState.getString("editName"))
         editCounter.setText(savedInstanceState.getString("editCounter"))
         editURL.setText(savedInstanceState.getString("editURL"))
         editK1.setText(savedInstanceState.getString("editK1"))
         editK2.setText(savedInstanceState.getString("editK2"))
         editUID.setText(savedInstanceState.getString("editUID"))
+        setSpinnerSelection(editCardType, savedInstanceState.getString("editCardType")!!);
     }
 
     private fun supportNfcHceFeature() =
@@ -178,6 +192,11 @@ class CardSetupManualActivity : AppCompatActivity() {
                 Log.i(TAG, "key2: " + editK2.text.toString())
                 Log.i(TAG, "key1: " + key1.toHexString())
                 Log.i(TAG, "key2: " + key2.toHexString())
+                var carddrawable = "virtualboltcard"
+                if (editCardType.selectedItem.toString() == "AdditionalDataLNbits"){
+                    carddrawable = "virtualboltcard_lnbits"
+                }
+
                 var card = Card(
                     name = editName.text.toString(),
                     type = "Manual",
@@ -192,13 +211,13 @@ class CardSetupManualActivity : AppCompatActivity() {
                     card = Card(
                         id = card_id,
                         name = editName.text.toString(),
-                        type = "Manual",
+                        type = editCardType.selectedItem.toString(),
                         uid = editUID.text.toString(),
                         url = editURL.text.toString(),
                         key1 = editK1.text.toString(),
                         key2 = editK2.text.toString(),
                         counter = editCounter.text.toString().toInt(),
-                        drawableName = "virtualboltcard",
+                        drawableName = carddrawable,
                     )
                 }
                 // Now, insert the card into the database
@@ -216,7 +235,7 @@ class CardSetupManualActivity : AppCompatActivity() {
                             editK1.text.toString(),
                             editK2.text.toString(),
                             editCounter.text.toString().toInt(),
-                            "virtualboltcard"
+                            carddrawable
                         )
                         set_active_card_id = card.id
                     }
@@ -245,6 +264,9 @@ class CardSetupManualActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
             val card: Card = appDatabase.cardDao().get(card_id).first()
             withContext(Dispatchers.Main) {
+                val cardtype = card.type;
+                setSpinnerSelection(editCardType, cardtype);
+
                 val name = card.name
                 if (name.length > 0) {
                     editName.setText(name)
@@ -317,6 +339,17 @@ class CardSetupManualActivity : AppCompatActivity() {
         val editor = sharedPreferences.edit()
         editor.putString(key, data)
         editor.apply()
+    }
+
+    private fun setSpinnerSelection(spinner: Spinner, value: String) {
+        val adapter = spinner.adapter as ArrayAdapter<String>
+        val position = adapter.getPosition(value)
+        if (position >= 0) {
+            Log.i(TAG, "Selected CardType: " + value)
+            spinner.setSelection(position)
+        } else {
+            Toast.makeText(this, "Value not found in Spinner", Toast.LENGTH_SHORT).show()
+        }
     }
 
 }
