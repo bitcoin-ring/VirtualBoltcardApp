@@ -43,5 +43,9 @@
     <string name="enable_pin">Enable PIN</string>
     <string name="settings_header">Settings</string>
     <string name="enable_hce_service">Enable Boltcard Service</string>
+    <string name="WalletUrl">Wallet Url</string>
+    <string name="FundingUrl">Funding Url</string>
+    <string name="Apikey">Apikey</string>
+    <string name="InvoiceKey">Invoice Key</string>
 
 </resources>

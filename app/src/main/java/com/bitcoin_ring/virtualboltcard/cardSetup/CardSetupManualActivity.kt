@@ -25,6 +25,7 @@ import com.bitcoin_ring.virtualboltcard.db.AppDatabase
 import com.bitcoin_ring.virtualboltcard.db.DatabaseUtils
 import com.bitcoin_ring.virtualboltcard.db.dao.CardDao
 import com.bitcoin_ring.virtualboltcard.db.entities.Card
+import com.bitcoin_ring.virtualboltcard.db.models.AdditionalCardData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,14 +39,18 @@ import java.security.Security
 class CardSetupManualActivity : AppCompatActivity() {
     private var counter = 0
     private var mNfcAdapter: NfcAdapter? = null
-    private lateinit var button: Button
+    private lateinit var editCardType: Spinner
     private lateinit var editURL: EditText
     private lateinit var editName: EditText
     private lateinit var editUID: EditText
     private lateinit var editCounter: EditText
     private lateinit var editK1: EditText
     private lateinit var editK2: EditText
-    private lateinit var editCardType: Spinner
+    private lateinit var editWalletUrl: EditText
+    private lateinit var editFundingUrl: EditText
+    private lateinit var editApikey: EditText
+    private lateinit var editInvoicekey: EditText
+    private lateinit var button: Button
     private lateinit var textView: TextView
     private lateinit var mTurnNfcDialog: AlertDialog
     private lateinit var sharedPreferences: SharedPreferences
@@ -69,7 +74,7 @@ class CardSetupManualActivity : AppCompatActivity() {
             }
         }
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        button = findViewById<View>(R.id.button) as Button
+        editCardType = findViewById(R.id.cardType)
         editName = findViewById<View>(R.id.editName) as EditText
         editUID = findViewById<View>(R.id.editUID) as EditText
         editCounter = findViewById<View>(R.id.editCounter) as EditText
@@ -77,8 +82,12 @@ class CardSetupManualActivity : AppCompatActivity() {
         editURL = findViewById<View>(R.id.editURL) as EditText
         editK1 = findViewById<View>(R.id.editK1) as EditText
         editK2 = findViewById<View>(R.id.editK2) as EditText
+        editWalletUrl = findViewById<View>(R.id.editWalletUrl) as EditText
+        editFundingUrl = findViewById<View>(R.id.editFundingUrl) as EditText
+        editApikey = findViewById<View>(R.id.EditApikey) as EditText
+        editInvoicekey = findViewById<View>(R.id.EditInvoicekey) as EditText
         textView = findViewById<View>(R.id.textView) as TextView
-        editCardType = findViewById(R.id.cardType)
+        button = findViewById<View>(R.id.button) as Button
         ArrayAdapter.createFromResource(
             this,
             R.array.spinner_options,
@@ -122,6 +131,10 @@ class CardSetupManualActivity : AppCompatActivity() {
         outState.putString("editK1", editK1.text.toString())
         outState.putString("editK2", editK2.text.toString())
         outState.putString("editUID", editUID.text.toString())
+        outState.putString("editWalletUrl", editWalletUrl.text.toString())
+        outState.putString("editFundingUrl", editFundingUrl.text.toString())
+        outState.putString("editApikey", editApikey.text.toString())
+        outState.putString("editInvoicekey", editInvoicekey.text.toString())
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -133,6 +146,10 @@ class CardSetupManualActivity : AppCompatActivity() {
         editK1.setText(savedInstanceState.getString("editK1"))
         editK2.setText(savedInstanceState.getString("editK2"))
         editUID.setText(savedInstanceState.getString("editUID"))
+        editWalletUrl.setText(savedInstanceState.getString("EditWalletUrl"))
+        editFundingUrl.setText(savedInstanceState.getString("editFundingUrl"))
+        editApikey.setText(savedInstanceState.getString("editApikey"))
+        editInvoicekey.setText(savedInstanceState.getString("editInvoicekey"))
         setSpinnerSelection(editCardType, savedInstanceState.getString("editCardType")!!);
     }
 
@@ -193,10 +210,6 @@ class CardSetupManualActivity : AppCompatActivity() {
                 Log.i(TAG, "key1: " + key1.toHexString())
                 Log.i(TAG, "key2: " + key2.toHexString())
                 var carddrawable = "virtualboltcard"
-                if (editCardType.selectedItem.toString() == "AdditionalDataLNbits"){
-                    carddrawable = "virtualboltcard_lnbits"
-                }
-
                 var card = Card(
                     name = editName.text.toString(),
                     type = "Manual",
@@ -205,21 +218,51 @@ class CardSetupManualActivity : AppCompatActivity() {
                     key1 = editK1.text.toString(),
                     key2 = editK2.text.toString(),
                     counter = 0,
-                    drawableName = "virtualboltcard"
+                    drawableName = carddrawable
                 )
-                if(action == R.id.cardsetup_edit && card_id > 0) {
-                    card = Card(
-                        id = card_id,
-                        name = editName.text.toString(),
-                        type = editCardType.selectedItem.toString(),
-                        uid = editUID.text.toString(),
-                        url = editURL.text.toString(),
-                        key1 = editK1.text.toString(),
-                        key2 = editK2.text.toString(),
-                        counter = editCounter.text.toString().toInt(),
-                        drawableName = carddrawable,
+
+                val additionalData :AdditionalCardData.LNbits? = if (editCardType.selectedItem.toString() == "AdditionalDataLNbits"){
+                    AdditionalCardData.LNbits(
+                        wallet_url = editWalletUrl.text.toString(), // replace with actual data
+                        funding_url = editFundingUrl.text.toString(), // replace with actual data
+                        apikey = editApikey.text.toString(), // replace with actual data
+                        invoicekey = editInvoicekey.text.toString() // replace with actual data
                     )
+                } else null
+                if (editCardType.selectedItem.toString() == "AdditionalDataLNbits"){
+                    carddrawable = "virtualboltcard_lnbits"
+                    if(action == R.id.cardsetup_edit && card_id > 0) {
+                        card = Card(
+                            id = card_id,
+                            name = editName.text.toString(),
+                            type = editCardType.selectedItem.toString(),
+                            uid = editUID.text.toString(),
+                            url = editURL.text.toString(),
+                            key1 = editK1.text.toString(),
+                            key2 = editK2.text.toString(),
+                            counter = editCounter.text.toString().toInt(),
+                            drawableName = carddrawable,
+                            additionalCardData = additionalData
+                        )
+                    }
                 }
+                else{
+                    if(action == R.id.cardsetup_edit && card_id > 0) {
+                        card = Card(
+                            id = card_id,
+                            name = editName.text.toString(),
+                            type = editCardType.selectedItem.toString(),
+                            uid = editUID.text.toString(),
+                            url = editURL.text.toString(),
+                            key1 = editK1.text.toString(),
+                            key2 = editK2.text.toString(),
+                            counter = editCounter.text.toString().toInt(),
+                            drawableName = carddrawable,
+                            additionalCardData = additionalData
+                        )
+                    }
+                }
+
                 // Now, insert the card into the database
                 lifecycleScope.launch(Dispatchers.IO) { // launch a new coroutine in background and continue
                     var set_active_card_id = 0
@@ -227,7 +270,8 @@ class CardSetupManualActivity : AppCompatActivity() {
                         set_active_card_id = appDatabase.cardDao().insert(card).toInt()
                     }
                     if(action == R.id.cardsetup_edit) {
-                        appDatabase.cardDao().updateCard(
+                        appDatabase.cardDao().update(card);
+                        /*appDatabase.cardDao().updateCard(
                             card.id,
                             editName.text.toString(),
                             editUID.text.toString(),
@@ -235,9 +279,10 @@ class CardSetupManualActivity : AppCompatActivity() {
                             editK1.text.toString(),
                             editK2.text.toString(),
                             editCounter.text.toString().toInt(),
-                            carddrawable
-                        )
-                        set_active_card_id = card.id
+                            carddrawable,
+
+                        )*/
+                       set_active_card_id = card.id
                     }
                     val active_card: Card = appDatabase.cardDao().get(set_active_card_id)[0]
                     active_card.activate(this@CardSetupManualActivity)
@@ -291,6 +336,43 @@ class CardSetupManualActivity : AppCompatActivity() {
                 if (uid.length > 0) {
                     editUID.setText(uid)
                 }
+                val additionalData = card.additionalCardData
+                val wallet_url: String = if (additionalData is AdditionalCardData.LNbits) {
+                    additionalData.wallet_url
+                } else {
+                    ""
+                }
+                if (wallet_url.length > 0) {
+                    editWalletUrl.setText(wallet_url)
+                }
+
+                val funding_url: String = if (additionalData is AdditionalCardData.LNbits) {
+                    additionalData.funding_url
+                } else {
+                    ""
+                }
+                if (funding_url.length > 0) {
+                    editFundingUrl.setText(funding_url)
+                }
+
+                val apikey: String = if (additionalData is AdditionalCardData.LNbits) {
+                    additionalData.apikey
+                } else {
+                    ""
+                }
+                if (apikey.length > 0) {
+                    editApikey.setText(apikey)
+                }
+
+                val invoiceKey: String = if (additionalData is AdditionalCardData.LNbits) {
+                    additionalData.invoicekey
+                } else {
+                    ""
+                }
+                if (invoiceKey.length > 0) {
+                    editInvoicekey.setText(invoiceKey)
+                }
+
                 if (action == R.id.cardsetup_create) {
                     editName.setText("")
                     editCounter.setText("")

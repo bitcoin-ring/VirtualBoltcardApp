@@ -131,6 +131,78 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editK1" />
 
+    <EditText
+            style="@style/DarkEditText"
+            android:id="@+id/editWalletUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:textColorHint="#a0a0a0"
+            android:textColor="#ffffff"
+            android:maxLines="1"
+            android:maxLength="255"
+            android:hint="@string/WalletUrl"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editK2" />
+
+    <EditText
+            style="@style/DarkEditText"
+            android:id="@+id/editFundingUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:textColorHint="#a0a0a0"
+            android:textColor="#ffffff"
+            android:maxLength="255"
+            android:maxLines="1"
+            android:hint="@string/FundingUrl"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editWalletUrl" />
+
+    <EditText
+            style="@style/DarkEditText"
+            android:id="@+id/EditApikey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:textColorHint="#a0a0a0"
+            android:textColor="#ffffff"
+            android:digits="0123456789ABCDEFabcdef"
+            android:maxLength="64"
+            android:hint="@string/Apikey"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editFundingUrl" />
+
+    <EditText
+            style="@style/DarkEditText"
+            android:id="@+id/EditInvoicekey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:textColorHint="#a0a0a0"
+            android:textColor="#ffffff"
+            android:digits="0123456789ABCDEFabcdef"
+            android:maxLength="64"
+            android:hint="@string/InvoiceKey"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/EditApikey" />
+
     <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
@@ -142,7 +214,7 @@
             android:textColor="#ffffff"
             android:text="@string/confirm"
             android:visibility="visible"
-            app:layout_constraintTop_toBottomOf="@+id/editK2"
+            app:layout_constraintTop_toBottomOf="@+id/EditInvoicekey"
             app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
