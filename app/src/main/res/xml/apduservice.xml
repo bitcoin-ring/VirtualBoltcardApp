@@ -3,7 +3,7 @@
 <host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
                    android:description="@string/servicedesc" android:requireDeviceUnlock="false">
 
-    <aid-group android:description="@string/aiddescription"  android:category="other" >
+    <aid-group android:description="@string/aiddescription"  android:category="payment" >
         <aid-filter android:name="D2760000850101"/>
         <!-- GlobalPlatform -->
         <!--<aid-filter android:name="FF00000151000001"/>-->
