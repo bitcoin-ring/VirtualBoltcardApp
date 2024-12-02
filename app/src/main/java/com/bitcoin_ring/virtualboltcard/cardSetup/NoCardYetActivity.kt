@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.bitcoin_ring.virtualboltcard.CardSetupManualActivity
 import com.bitcoin_ring.virtualboltcard.R
@@ -34,5 +35,11 @@ class NoCardYetActivity : AppCompatActivity() {
             intent.putExtra("card_id", -1)
             startActivity(intent)
         }
+
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finishAffinity()
+            }
+        })
     }
 }
